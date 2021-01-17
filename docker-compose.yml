@@ -9,9 +9,9 @@ services:
         RUBY_VERSION: '2.7'
         PG_MAJOR: '12'
         NODE_MAJOR: '12'
-        YARN_VERSION: '1.22.4'
-        BUNDLER_VERSION: '2.1.4'
-    image: example-dev:1.0.0
+        YARN_VERSION: '1.22.10'
+        BUNDLER_VERSION: '2.2.5'
+    image: yarras-dev:1.0.0
     tmpfs:
       - /tmp
 
@@ -43,8 +43,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
+      # redis:
+      #   condition: service_healthy
 
   runner:
     <<: *backend
@@ -59,9 +59,9 @@ services:
     ports:
       - '3000:3000'
 
-  sidekiq:
-    <<: *backend
-    command: bundle exec sidekiq -C config/sidekiq.yml
+  # sidekiq:
+  #   <<: *backend
+  #   command: bundle exec sidekiq -C config/sidekiq.yml
 
   postgres:
     image: postgres:11.1
@@ -79,17 +79,17 @@ services:
       test: pg_isready -U postgres -h 127.0.0.1
       interval: 5s
 
-  redis:
-    image: redis:3.2-alpine
-    volumes:
-      - redis:/data
-    ports:
-      - 6379
-    healthcheck:
-      test: redis-cli ping
-      interval: 1s
-      timeout: 3s
-      retries: 30
+  # redis:
+  #   image: redis:3.2-alpine
+  #   volumes:
+  #     - redis:/data
+  #   ports:
+  #     - 6379
+  #   healthcheck:
+  #     test: redis-cli ping
+  #     interval: 1s
+  #     timeout: 3s
+  #     retries: 30
 
   webpacker:
     <<: *app

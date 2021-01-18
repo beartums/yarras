@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: ./.dockerdev/Dockerfile
       args:
-        RUBY_VERSION: '2.7'
+        RUBY_VERSION: '2.6'
         PG_MAJOR: '12'
         NODE_MAJOR: '12'
         YARN_VERSION: '1.22.10'
@@ -19,6 +19,8 @@ services:
     <<: *app
     stdin_open: true
     tty: true
+    env_file:
+      - ".env/${ENV_FILE:-development}"
     volumes:
       - .:/app:cached
       - rails_cache:/app/tmp/cache
@@ -27,7 +29,7 @@ services:
       - packs:/app/public/packs
       - .dockerdev/.psqlrc:/root/.psqlrc:ro
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-development}
       - RAILS_ENV=${RAILS_ENV:-development}
       - REDIS_URL=redis://redis:6379/
       - BOOTSNAP_CACHE_DIR=/usr/local/bundle/_bootsnap
@@ -36,10 +38,6 @@ services:
       - HISTFILE=/app/log/.bash_history
       - PSQL_HISTFILE=/app/log/.psql_history
       - EDITOR=nano
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-      - POSTGRES_HOST
-      - DATABASE_URL
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,9 +47,14 @@ services:
   runner:
     <<: *backend
     command: /bin/bash
+    container_name: yarras_runner
     ports:
       - '3000:3000'
       - '3002:3002'
+
+  bash:
+    <<: *backend
+    command: /bin/bash
 
   rails:
     <<: *backend
@@ -65,14 +68,15 @@ services:
 
   postgres:
     image: postgres:11.1
+    container_name: yarras_postgres
+    env_file:
+      - ".env/${ENV_FILE:-development}"
     volumes:
       - .psqlrc:/root/.psqlrc:ro
       - postgres:/var/lib/postgresql/data
       - ./log:/root/log:cached
     environment:
       - PSQL_HISTFILE=/root/log/.psql_history
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
     ports:
       - 5432
     healthcheck:
@@ -94,6 +98,7 @@ services:
   webpacker:
     <<: *app
     command: ./bin/webpack-dev-server
+    container_name: yarras_webpacker
     ports:
       - '3035:3035'
     volumes:

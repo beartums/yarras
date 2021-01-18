@@ -34,6 +34,7 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 # Application dependencies
 # We use an external Aptfile for that, stay tuned
 COPY .dockerdev/Aptfile /tmp/Aptfile
+COPY .dockerdev/.pryrc /root
 RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrade && \
   DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
     libpq-dev \
